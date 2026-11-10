@@ -1,0 +1,169 @@
+# The media stack on stx-server: Jellyfin plus the apps that fill it.
+#
+#   Seerr      request a movie or show (the page you actually use)
+#   Sonarr     TV: tracks shows, searches, renames and files episodes
+#   Radarr     movies: the same job for films
+#   Prowlarr   keeps the indexer list and hands it to Sonarr and Radarr
+#   qBittorrent downloads, and only ever through the Gluetun VPN tunnel
+#   Bazarr     fetches subtitles
+#   Jellyfin   plays it all, with Intel Quick Sync doing the transcoding
+#
+# Start or update:  docker compose up -d
+# Settings live in .env (copy .env.example). The labels tie each container to
+# its card on the stx-monitor map.
+name: media
+
+x-app: &app
+  restart: unless-stopped
+  environment: &env
+    PUID: ${PUID:-1000}
+    PGID: ${PGID:-1000}
+    TZ: ${TZ:-America/Chicago}
+    UMASK: "002"
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  # ------------------------------------------------------------------ playback
+  jellyfin:
+    <<: *app
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    # All GPUs. On stx-server the Intel one (Quick Sync) is /dev/dri/renderD129,
+    # because nouveau registers the GTX 1060 first. Pick it in Jellyfin's
+    # Playback settings; stx-monitor's System page names the right node.
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ./config/jellyfin:/config
+      - ${DATA_ROOT:?set DATA_ROOT in .env}/media:/data/media:ro
+    ports:
+      - 8096:8096
+    labels:
+      stx.app: jellyfin
+
+  # ------------------------------------------------------------------ requests
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    restart: unless-stopped
+    init: true
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      LOG_LEVEL: info
+    volumes:
+      - ./config/seerr:/app/config   # owned by 1000:1000, scripts/setup.sh does it
+    ports:
+      - 5055:5055
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      stx.app: seerr
+
+  # ---------------------------------------------------------- library managers
+  # Sonarr, Radarr and qBittorrent see the whole data drive as one /data mount,
+  # so a finished download is hardlinked into the library instantly instead of
+  # being copied (which would need twice the space).
+  sonarr:
+    <<: *app
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    volumes:
+      - ./config/sonarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - 8989:8989
+    labels:
+      stx.app: sonarr
+
+  radarr:
+    <<: *app
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    volumes:
+      - ./config/radarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - 7878:7878
+    labels:
+      stx.app: radarr
+
+  prowlarr:
+    <<: *app
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    volumes:
+      - ./config/prowlarr:/config
+    ports:
+      - 9696:9696
+    labels:
+      stx.app: prowlarr
+
+  bazarr:
+    <<: *app
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    volumes:
+      - ./config/bazarr:/config
+      - ${DATA_ROOT}/media:/data/media
+    ports:
+      - 6767:6767
+    labels:
+      stx.app: bazarr
+
+  # ------------------------------------------------------- downloads, VPN only
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      VPN_SERVICE_PROVIDER: ${VPN_PROVIDER:?set VPN_PROVIDER in .env}
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${WIREGUARD_PRIVATE_KEY:?set WIREGUARD_PRIVATE_KEY in .env}
+      WIREGUARD_ADDRESSES: ${WIREGUARD_ADDRESSES:?set WIREGUARD_ADDRESSES in .env}
+      SERVER_COUNTRIES: ${VPN_COUNTRIES:-United States}
+    volumes:
+      - ./config/gluetun:/gluetun
+    ports:
+      # qBittorrent's web UI. 8081, because openGym's web container already has 8080.
+      - 8081:8081
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      stx.app: gluetun
+      # Stopping the tunnel cuts qBittorrent off; never do it by accident from the console.
+      stx.protected: "true"
+
+  qbittorrent:
+    <<: *app
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    # Shares Gluetun's network: when the VPN is down, qBittorrent has no network
+    # at all, so nothing can ever leak out over the home connection.
+    network_mode: service:gluetun
+    environment:
+      <<: *env
+      WEBUI_PORT: 8081
+    volumes:
+      - ./config/qbittorrent:/config
+      - ${DATA_ROOT}:/data
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true
+    labels:
+      stx.app: qbittorrent
