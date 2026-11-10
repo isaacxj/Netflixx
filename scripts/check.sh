@@ -1,4 +1,4 @@
-# Netflixx
+#!/usr/bin/env bash
 # Checks the things that are easy to get wrong and hard to notice:
 # the VPN really hides the home address, hardlinks work, and Quick Sync is visible.
 # Run from anywhere: ~/netflixx/scripts/check.sh

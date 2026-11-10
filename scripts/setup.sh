@@ -1,4 +1,4 @@
-# Netflixx
+#!/usr/bin/env bash
 # One-time setup: check the drive, create the folder layout, set ownership.
 # Run from anywhere: ~/netflixx/scripts/setup.sh
 set -euo pipefail
