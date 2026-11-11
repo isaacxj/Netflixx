@@ -24,6 +24,7 @@ Seerr ──▶ Sonarr / Radarr ◀── Prowlarr (indexers)
 | qBittorrent | 8081 | Downloads. Lives inside Gluetun's network, so no VPN means no traffic. |
 | Bazarr | 6767 | Fetches subtitles for everything in the library. |
 | Jellyfin | 8096 | Streams it all, with Intel Quick Sync transcoding. |
+| AdGuard Home | 3053 | Blocks ads and tracking for the TV, by DNS. Separate, in `adblock/`. |
 
 qBittorrent is on 8081 because openGym's web container already has 8080.
 
@@ -107,6 +108,37 @@ network.
 Install Jellyfin on the iPhone and add the server as `http://stx-server:8096` (with
 Tailscale on). Requests go through Seerr at `http://stx-server:5055`.
 
+## Block ads on the TV
+
+AdGuard Home runs as a DNS server on stx-server. When the TV asks where an ad or tracking
+domain lives, AdGuard answers "nowhere", so the ad never loads. It's in `adblock/`, its
+own compose project, so updating the media stack never takes DNS down.
+
+```bash
+cd ~/netflixx && scripts/adblock-setup.sh
+```
+
+The script starts it, sets the admin password, adds smart-TV and Fire TV blocklists on top
+of AdGuard's defaults, and prints what to type into the TV. The admin page is
+`http://stx-server:3053`; its Query Log shows every lookup the TV makes and what got
+blocked.
+
+**Pointing the TV at it.** AT&T's BGW320 can't hand out a different DNS server to devices,
+so the TV gets it set by hand: on the Fire TV, forget the Wi-Fi, join again, and choose
+Advanced. Use a fixed address below `.64` (the gateway hands out `.64` and up), gateway
+`192.168.1.254`, prefix `24`, and `192.168.1.134` as DNS. Don't put a public DNS like
+`1.1.1.1` in the second slot, or the TV quietly uses it for some lookups and ads come back.
+
+What to expect:
+
+- Banner ads and most sponsored tiles on the Fire TV home screen go blank or disappear, and
+  the TV stops reporting what you watch. Amazon serves some promotions from the same
+  servers as the home screen itself, so a few stay; blocking those breaks the home screen.
+- If an app stops working, find its blocked lookups in Query Log and press Unblock. If a
+  whole list causes trouble, switch it off under Filters, DNS blocklists.
+- If stx-server is off, the TV can't look anything up. stx-monitor alerts you when
+  `adguard` stops, and the quick fix is setting the TV's network back to automatic.
+
 ## Day to day
 
 - **Update**: the Update button in stx-monitor's Control center, one app at a time, or
@@ -114,6 +146,8 @@ Tailscale on). Requests go through Seerr at `http://stx-server:5055`.
 - **Back up** `~/netflixx/config/`. That's every app's settings and history. The media
   itself can be found again; the settings are an evening's work.
 - **Logs**: stx-monitor's Logs page, or `docker compose logs -f sonarr`.
+- **Update AdGuard**: `docker compose -f adblock/compose.yaml pull` then
+  `docker compose -f adblock/compose.yaml --env-file .env up -d`.
 
 ## Good to know
 

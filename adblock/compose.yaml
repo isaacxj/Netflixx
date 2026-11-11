@@ -1,0 +1,33 @@
+# AdGuard Home: DNS for the TV (and anything else pointed at it) that answers
+# "nothing here" for ad and tracking domains, so those never load.
+#
+# Its own compose project, separate from the media stack, so restarting or
+# updating Jellyfin and the arr apps never takes DNS down for the house.
+# Set up with: scripts/adblock-setup.sh
+name: adblock
+
+services:
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Chicago}
+    volumes:
+      - ../config/adguard/work:/opt/adguardhome/work
+      - ../config/adguard/conf:/opt/adguardhome/conf
+    ports:
+      # DNS only on the server's home-network address. Ubuntu's own resolver
+      # already holds port 53 on 127.0.0.53, and binding the LAN address
+      # leaves it alone, so the server's own lookups never depend on AdGuard.
+      - ${LAN_IP:?set LAN_IP in .env}:53:53/udp
+      - ${LAN_IP}:53:53/tcp
+      # Admin page and API. 3053 so it can't clash with other apps on 3000.
+      - 3053:3000
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      stx.app: adguard
