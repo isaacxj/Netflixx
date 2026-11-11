@@ -108,6 +108,31 @@ network.
 Install Jellyfin on the iPhone and add the server as `http://stx-server:8096` (with
 Tailscale on). Requests go through Seerr at `http://stx-server:5055`.
 
+## The Netflixx look
+
+![Netflixx theme preview](docs/theme-preview.jpg)
+
+`theme/netflixx.css` restyles Jellyfin's own pages: near-black background, a warm amber
+accent, the netflixx wordmark in place of Jellyfin's banner, rounded cards with an amber
+ring on hover or remote focus, and a filled play button on every movie and episode. It
+shows up in the browser, the Jellyfin iPhone app and Jellyfin Media Player, since those all
+draw Jellyfin's web pages. Native TV apps draw their own screens and ignore it; the TV
+gets its own app later.
+
+Install it once Jellyfin is set up:
+
+1. In Jellyfin, open **Dashboard → API Keys**, press **+**, and name it `netflixx`.
+2. Put the key in `.env` as `JELLYFIN_API_KEY=...`.
+3. Run `scripts/theme.sh`, then reload Jellyfin.
+
+Run it again after changing the CSS. `scripts/theme.sh remove` puts Jellyfin's own look
+back. If there was custom CSS before, the script saves it to
+`config/jellyfin-custom-css.backup` first. The colors are variables at the top of the
+file: change `--nx-accent` for a different accent.
+
+If a user has turned on "Disable server-provided custom CSS" in their own display
+settings, they won't see it.
+
 ## Block ads on the TV
 
 AdGuard Home runs as a DNS server on stx-server. When the TV asks where an ad or tracking

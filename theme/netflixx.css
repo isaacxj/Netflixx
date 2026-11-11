@@ -1,0 +1,403 @@
+/*
+ * Netflixx: a theme for the Jellyfin web client (10.11).
+ *
+ * Applies wherever Jellyfin's own web pages are shown: the browser, the Jellyfin
+ * iPhone and Android apps (they wrap the same pages) and Jellyfin Media Player.
+ * Native TV clients draw their own screens and ignore it.
+ *
+ * Install or update with scripts/theme.sh. Change the look from the variables below.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
+
+:root {
+    --nx-bg: #0b0b0e;            /* page */
+    --nx-surface: #15151a;       /* panels, dialogs, menus */
+    --nx-surface-2: #1e1e25;     /* raised controls */
+    --nx-line: rgba(255, 255, 255, 0.08);
+    --nx-text: #f2f0eb;
+    --nx-text-2: rgba(242, 240, 235, 0.68);
+    --nx-accent: #f5a524;        /* marquee amber */
+    --nx-accent-hi: #ffbf4d;
+    --nx-accent-ink: #1c1203;    /* text on the accent */
+    --nx-accent-soft: rgba(245, 165, 36, 0.16);
+    --nx-radius: 10px;
+    --nx-display: "Outfit", "Inter", system-ui, sans-serif;
+    --nx-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* ------------------------------------------------------------------ base */
+
+html,
+.backgroundContainer,
+.dialog,
+.nowPlayingPlaylist,
+.nowPlayingContextMenu {
+    background-color: var(--nx-bg);
+}
+
+html,
+body,
+.skinHeader {
+    font-family: var(--nx-body);
+    color: var(--nx-text);
+}
+
+.backgroundContainer.withBackdrop {
+    background-color: rgba(11, 11, 14, 0.82);
+}
+
+* {
+    scrollbar-color: #34343d var(--nx-bg);
+}
+
+::selection {
+    background: var(--nx-accent);
+    color: var(--nx-accent-ink);
+}
+
+.collapseContent,
+.formDialogFooter:not(.formDialogFooter-clear),
+.formDialogHeader:not(.formDialogHeader-clear),
+.paperList,
+.visualCardBox,
+.actionSheet,
+.mainDrawer {
+    background-color: var(--nx-surface);
+}
+
+.fab,
+.raised {
+    background: var(--nx-surface-2);
+}
+
+.fab:focus,
+.raised:focus {
+    background: #2a2a33;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.skinHeader-withBackground {
+    background-color: rgba(11, 11, 14, 0.9);
+    border-bottom: 1px solid var(--nx-line);
+}
+
+.skinHeader.semiTransparent {
+    background: linear-gradient(to bottom, rgba(11, 11, 14, 0.85), rgba(11, 11, 14, 0));
+}
+
+/* Our wordmark in place of the Jellyfin banner. */
+.pageTitleWithDefaultLogo,
+.layout-tv .pageTitleWithDefaultLogo {
+    background-image: none !important;
+    width: auto !important;
+    font-family: var(--nx-display);
+    font-weight: 700;
+    font-size: 1.55em;
+    letter-spacing: -0.02em;
+    text-transform: lowercase;
+    line-height: 1;
+}
+
+.pageTitleWithDefaultLogo::before {
+    content: "netfli";
+    color: var(--nx-text);
+}
+
+.pageTitleWithDefaultLogo::after {
+    content: "xx";
+    color: var(--nx-accent);
+}
+
+.headerTabs .emby-tab-button {
+    font-family: var(--nx-display);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.emby-tab-button-active,
+.emby-tab-button-active.emby-button-tv {
+    color: var(--nx-accent);
+}
+
+.emby-tab-button:hover,
+.emby-tab-button.show-focus:focus,
+.guide-date-tab-button.emby-tab-button-active,
+.guide-date-tab-button:focus {
+    color: var(--nx-accent);
+}
+
+/* ------------------------------------------------------- side menu (drawer) */
+
+.navMenuOption {
+    border-radius: 8px;
+    margin: 2px 8px;
+}
+
+.navMenuOption-selected {
+    background: var(--nx-accent-soft) !important;
+    color: var(--nx-accent) !important;
+}
+
+.navMenuOption:hover:not(.navMenuOption-selected) {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* ------------------------------------------------------------- headings */
+
+.sectionTitle,
+.itemName,
+.pageTitle,
+h1,
+h2,
+h3 {
+    font-family: var(--nx-display);
+    letter-spacing: -0.01em;
+}
+
+.sectionTitle-cards,
+.sectionTitle {
+    font-weight: 600;
+}
+
+.verticalSection .sectionTitle-cards {
+    font-size: 1.35em;
+}
+
+.sectionTitleTextButton .sectionTitle:hover,
+.sectionTitleTextButton:hover .sectionTitle {
+    color: var(--nx-accent);
+}
+
+/* ---------------------------------------------------------------- cards */
+
+.cardBox:not(.visualCardBox) .cardScalable,
+.cardImageContainer,
+.cardContent,
+.cardOverlayContainer {
+    border-radius: var(--nx-radius);
+}
+
+.cardBox:not(.visualCardBox) .cardScalable {
+    overflow: hidden;
+    background: var(--nx-surface);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.cardText {
+    color: var(--nx-text-2);
+}
+
+.cardText-first {
+    color: var(--nx-text);
+    font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .card:hover .cardBox:not(.visualCardBox) .cardScalable {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--nx-accent);
+    }
+}
+
+/* TV remote focus: a clear amber ring instead of the blue border. */
+.card:focus .cardBox.visualCardBox,
+.card:focus .cardBox:not(.visualCardBox) .cardScalable {
+    border-color: var(--nx-accent) !important;
+    box-shadow: 0 0 0 3px var(--nx-accent);
+}
+
+.defaultCardBackground1 { background-color: #3a2a12; }
+.defaultCardBackground2 { background-color: #5a3d10; }
+.defaultCardBackground3 { background-color: #2b2b33; }
+.defaultCardBackground4 { background-color: #402018; }
+.defaultCardBackground5 { background-color: #1f2d2a; }
+
+.itemProgressBarForeground,
+.countIndicator,
+.fullSyncIndicator,
+.mediaSourceIndicator,
+.playedIndicator {
+    background: var(--nx-accent);
+    color: var(--nx-accent-ink);
+}
+
+.itemProgressBar {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+/* ---------------------------------------------------------- detail page */
+
+.itemBackdrop {
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.detailPagePrimaryContainer .itemName.infoText {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.itemMiscInfo,
+.itemMiscInfo-primary,
+.itemMiscInfo-secondary {
+    color: var(--nx-text-2);
+}
+
+.overview-container .overview,
+.detailPageContent .overview {
+    line-height: 1.6;
+    color: var(--nx-text-2);
+    max-width: 72ch;
+}
+
+.emby-button.detailFloatingButton {
+    background-color: var(--nx-accent);
+    color: var(--nx-accent-ink);
+}
+
+.layout-tv .emby-button.detailFloatingButton:focus {
+    background-color: var(--nx-text);
+    color: var(--nx-accent-ink);
+}
+
+.detailButton:hover .detailButton-icon,
+.detailButton:focus .detailButton-icon {
+    color: var(--nx-accent);
+}
+
+/* The main play button (Resume, or Play when there's nothing to resume) is a filled amber disc. */
+.mainDetailButtons .btnPlay:not(.hide) .detailButton-content,
+.mainDetailButtons .btnPlay.hide + .btnReplay:not(.hide) .detailButton-content {
+    background: var(--nx-accent);
+    color: var(--nx-accent-ink);
+    border-radius: 50%;
+    width: 2.6em;
+    height: 2.6em;
+    box-shadow: 0 6px 18px rgba(245, 165, 36, 0.35);
+}
+
+.mainDetailButtons .btnPlay:not(.hide):hover .detailButton-icon,
+.mainDetailButtons .btnPlay.hide + .btnReplay:not(.hide):hover .detailButton-icon {
+    color: var(--nx-accent-ink);
+}
+
+.metadataSidebarIcon {
+    color: var(--nx-accent);
+}
+
+/* ------------------------------------------------------- buttons, inputs */
+
+.button-submit {
+    background: var(--nx-accent);
+    color: var(--nx-accent-ink);
+    font-weight: 600;
+}
+
+.button-submit:focus,
+.button-submit:hover {
+    background: var(--nx-accent-hi);
+    color: var(--nx-accent-ink);
+}
+
+.button-link,
+.button-flat:hover,
+.buttonActive,
+.upNextDialog-countdownText,
+.inputLabelFocused,
+.selectLabelFocused,
+.textareaLabelFocused {
+    color: var(--nx-accent) !important;
+}
+
+.emby-button.show-focus:focus,
+.alphaPickerButton-tv:focus,
+.emby-select-tv-withcolor:focus,
+.guide-date-tab-button.show-focus:focus,
+.guide-channelHeaderCell:focus,
+.programCell:focus {
+    background-color: var(--nx-accent) !important;
+    color: var(--nx-accent-ink) !important;
+}
+
+.selectionCommandsPanel {
+    background: var(--nx-accent);
+    color: var(--nx-accent-ink);
+}
+
+.itemSelectionPanel {
+    border-color: var(--nx-accent);
+}
+
+.progressring-spiner {
+    border-color: var(--nx-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .paper-icon-button-light:hover:not(:disabled) {
+        color: var(--nx-accent);
+        background-color: var(--nx-accent-soft);
+    }
+}
+
+.paper-icon-button-light:active:not(:disabled),
+.paper-icon-button-light.show-focus:focus {
+    color: var(--nx-accent);
+    background-color: var(--nx-accent-soft);
+}
+
+.emby-input,
+.emby-textarea,
+.emby-select-withcolor {
+    background-color: var(--nx-surface-2);
+    border-color: var(--nx-line);
+    border-radius: 8px;
+}
+
+.emby-input:focus,
+.emby-textarea:focus,
+.emby-select-withcolor:focus {
+    border-color: var(--nx-accent) !important;
+}
+
+.emby-checkbox:checked + span + .checkboxOutline {
+    background-color: var(--nx-accent);
+    border-color: var(--nx-accent);
+}
+
+.emby-checkbox:focus:not(:checked) + span + .checkboxOutline {
+    border-color: var(--nx-accent);
+}
+
+/* ----------------------------------------------------------- sign-in page */
+
+#loginPage .padded-left.padded-right,
+#selectServerPage .padded-left.padded-right {
+    max-width: 26em;
+    margin: 0 auto;
+}
+
+#loginPage .manualLoginForm,
+#loginPage .visualLoginForm {
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-line);
+    border-radius: 14px;
+    padding: 1.6em 1.6em 1em;
+}
+
+#loginPage .sectionTitle {
+    text-align: center;
+}
+
+/* ----------------------------------------------------------- video player */
+
+.osdHeader .headerButton:hover,
+.videoOsdBottom .paper-icon-button-light:hover:not(:disabled) {
+    color: var(--nx-accent);
+}
+
+.osdPositionSlider .mdl-slider-background-lower,
+.mdl-slider-background-lower {
+    background-color: var(--nx-accent) !important;
+}
