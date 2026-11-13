@@ -133,6 +133,10 @@ services:
       WIREGUARD_PRIVATE_KEY: ${WIREGUARD_PRIVATE_KEY:?set WIREGUARD_PRIVATE_KEY in .env}
       WIREGUARD_ADDRESSES: ${WIREGUARD_ADDRESSES:?set WIREGUARD_ADDRESSES in .env}
       SERVER_COUNTRIES: ${VPN_COUNTRIES:-United States}
+      # ProtonVPN only allows torrents on its P2P servers; on, Gluetun picks only those.
+      PORT_FORWARD_ONLY: ${VPN_P2P_ONLY:-off}
+      # Ask the VPN for an incoming port (ProtonVPN: also tick NAT-PMP when making the key).
+      VPN_PORT_FORWARDING: ${VPN_PORT_FORWARDING:-off}
     volumes:
       - ./config/gluetun:/gluetun
     ports:
