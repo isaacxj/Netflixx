@@ -82,7 +82,9 @@ create a login the first time; do it.
 
 1. **qBittorrent** (8081): the first password is in `docker logs qbittorrent`. Change it.
    Under Downloads, default save path `/data/torrents`. Add categories `tv` →
-   `/data/torrents/tv` and `movies` → `/data/torrents/movies`.
+   `/data/torrents/tv` and `movies` → `/data/torrents/movies`. Under Web UI, tick
+   **Bypass authentication for clients on localhost**: that's how Gluetun hands
+   qBittorrent the VPN's forwarded port (more peers, faster downloads) each time it changes.
 2. **Sonarr** (8989): Media Management → root folder `/data/media/tv`, and turn on
    "Use Hardlinks instead of Copy". Download Clients → qBittorrent, host `gluetun`,
    port `8081`, category `tv`.

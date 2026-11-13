@@ -137,6 +137,11 @@ services:
       PORT_FORWARD_ONLY: ${VPN_P2P_ONLY:-off}
       # Ask the VPN for an incoming port (ProtonVPN: also tick NAT-PMP when making the key).
       VPN_PORT_FORWARDING: ${VPN_PORT_FORWARDING:-off}
+      # Hand each new forwarded port to qBittorrent and bind it to the VPN interface;
+      # when the VPN drops, park qBittorrent on loopback. Needs qBittorrent's
+      # "Bypass authentication for clients on localhost" ticked.
+      VPN_PORT_FORWARDING_UP_COMMAND: '/bin/sh -c ''wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8081/api/v2/app/setPreferences'''
+      VPN_PORT_FORWARDING_DOWN_COMMAND: '/bin/sh -c ''wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo\"}" http://127.0.0.1:8081/api/v2/app/setPreferences'''
     volumes:
       - ./config/gluetun:/gluetun
     ports:
